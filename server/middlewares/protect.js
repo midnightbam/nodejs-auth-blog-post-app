@@ -1,3 +1,17 @@
-// 🐨 Todo: Exercise #5
-// สร้าง Middleware ขึ้นมา 1 อันชื่อ Function ว่า `protect`
-// เพื่อเอาไว้ตรวจสอบว่า Client แนบ Token มาใน Header ของ Request หรือไม่
+
+import jwt from "jsonwebtoken";
+
+export function protect(req, res, next) {
+	const authHeader = req.headers["authorization"];
+	if (!authHeader || !authHeader.startsWith("Bearer ")) {
+		return res.status(401).json({ message: "No token provided" });
+	}
+	const token = authHeader.split(" ")[1];
+	try {
+		const decoded = jwt.verify(token, "secret-key");
+		req.user = decoded;
+		next();
+	} catch (err) {
+		return res.status(401).json({ message: "Invalid token" });
+	}
+}
